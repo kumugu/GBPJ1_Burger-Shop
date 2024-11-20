@@ -8,8 +8,8 @@
 
 - 예:
 
-  ```
-  java코드 복사// Main.java (기본 틀)
+  ```java
+  // Main.java (기본 틀)
   public class Main {
       public static void main(String[] args) {
           // 로그인 처리 후
