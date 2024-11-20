@@ -157,7 +157,7 @@ src/
   - `InputValidator.java`: 입력값 검증 유틸리티
  ------
 
-### 4. RESTful API 설계 
+### 4. RESTful API 설계 (추후 확장을 고려)
 
 #### **1) 인증**
 
