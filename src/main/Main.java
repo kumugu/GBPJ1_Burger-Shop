@@ -8,6 +8,9 @@ public class Main {
         System.out.println("JDBC설정");
         DBConnection dbcon = new DBConnection();
         dbcon.connect();
+        
+        System.out.println("devlop 브랜치에서 feature로 가져왔을때");
+        System.out.println("변경 안되게하려면 Branch > Merge into Current Branch");
     }
 
 }
