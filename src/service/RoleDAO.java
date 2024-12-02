@@ -1,4 +1,4 @@
-package dao;
+package service;
 
 import db.DBConnection;
 import model.Role;
