@@ -59,7 +59,7 @@ public class MainUI extends JFrame {
         // 초기 화면 설정
         showPanel(LOGIN_PANEL);
 
-        setVisible(true); // 화면 표시111
+        setVisible(true); // 화면 표시
     }
 
     // 로그인 성공 시 role_id 저장
