@@ -3,6 +3,7 @@ package ui.login;
 import ui.LobbyUI;
 import ui.MainUI;
 import db.DBConnection;
+import db.DatabaseService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,11 +15,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class LoginUI extends JPanel {
-
+    private JTextField usernameField; // 전역 변수로 선언
+    private JPasswordField passwordField; // 전역 변수로 선언
     private MainUI mainUI; // MainUI 참조
+    private DatabaseService database;
 
     public LoginUI(MainUI mainUI) {
         this.mainUI = mainUI;
+        this.database = new DatabaseService(); // DatabaseService 초기화
+
         setLayout(new BorderLayout());
 
         // 배경색 설정
@@ -46,8 +51,9 @@ public class LoginUI extends JPanel {
         gbc.gridy++;
         cardPanel.add(new JLabel("아이디:"), gbc);
 
+        // 전역 변수 usernameField를 초기화
         gbc.gridx = 1;
-        JTextField usernameField = new JTextField(15);
+        usernameField = new JTextField(15); // 전역 변수 사용
         cardPanel.add(usernameField, gbc);
 
         // 비밀번호 입력
@@ -55,9 +61,11 @@ public class LoginUI extends JPanel {
         gbc.gridy++;
         cardPanel.add(new JLabel("비밀번호:"), gbc);
 
+        // 전역 변수 passwordField를 초기화
         gbc.gridx = 1;
-        JPasswordField passwordField = new JPasswordField(15);
+        passwordField = new JPasswordField(15); // 전역 변수 사용
         cardPanel.add(passwordField, gbc);
+
 
         // 버튼
         gbc.gridx = 0;
@@ -83,23 +91,41 @@ public class LoginUI extends JPanel {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
 
-            // 아이디나 비밀번호가 비어있는지 확인
-            if ("".equals(username) || "".equals(password)) {
-                JOptionPane.showMessageDialog(this, "아이디와 비밀번호를 입력해주세요!");
-            } else if (isValidLogin(username, password)) { // 로그인 정보가 유효한지 확인
-                JOptionPane.showMessageDialog(this, "로그인 성공!");
-                mainUI.loginSuccess(); // 로그인 성공 시 호출
-                MainUI.showPanel(MainUI.LOBBY_PANEL);  // 로그인 성공 후 LobbyUI로 전환
-            } else {
-                JOptionPane.showMessageDialog(this, "아이디 또는 비밀번호가 잘못되었습니다.");
+            try {
+                // DatabaseService를 통해 role_id 가져오기
+                int userRoleId = database.getUserRoleId(username, password);
+
+                if (userRoleId != -1) { // 로그인 성공
+                    mainUI.loginSuccess(userRoleId); // role_id 전달
+                    MainUI.showPanel(MainUI.LOBBY_PANEL); // 로비 화면으로 이동
+                } else {
+                    JOptionPane.showMessageDialog(null, "로그인 실패: 올바른 정보를 입력해주세요.");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "오류가 발생했습니다.");
             }
         });
+
+
 
         // 회원가입 버튼 이벤트 처리
         registerButton.addActionListener(e -> {
             MainUI.showPanel(MainUI.REGISTER_PANEL);  // 회원가입 화면으로 전환
         });
     }
+
+
+    // 필드 초기화 메서드
+    public void clearFields() {
+        if (usernameField != null) {
+            usernameField.setText("");
+        }
+        if (passwordField != null) {
+            passwordField.setText("");
+        }
+    }
+
 
     // 로그인 검증 메소드
     private boolean isValidLogin(String username, String password) {

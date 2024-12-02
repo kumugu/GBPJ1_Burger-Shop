@@ -27,6 +27,7 @@ public class MainUI extends JFrame {
 
     private static JPanel centerPanel; // 화면 전환을 관리할 중앙 패널
     private boolean isLoggedIn = false; // 로그인 상태를 저장하는 변수
+    private Integer currentUserRoleId = null; // role_id를 저장
 
     public MainUI() throws SQLException {
         // 기본 설정
@@ -37,7 +38,6 @@ public class MainUI extends JFrame {
 
         // 메뉴바 생성
         createMenuBar();
-
 
         // 메인 콘텐츠 패널 설정
         JPanel contentPane = new JPanel(new BorderLayout());
@@ -50,7 +50,7 @@ public class MainUI extends JFrame {
         // 패널 추가
         centerPanel.add(new LoginUI(this), LOGIN_PANEL);
         centerPanel.add(new RegisterUI(this), REGISTER_PANEL);
-        centerPanel.add(new LobbyUI(), LOBBY_PANEL);
+        centerPanel.add(new LobbyUI(this), LOBBY_PANEL);
         centerPanel.add(new SalesUI(), SALES_PANEL);
         centerPanel.add(new ManagerUI(), MANAGER_PANEL);
         centerPanel.add(new ProductManagementUI(), PRODUCTS_PANEL);
@@ -59,8 +59,15 @@ public class MainUI extends JFrame {
         // 초기 화면 설정
         showPanel(LOGIN_PANEL);
 
-        setVisible(true); // 화면 표시
+        setVisible(true); // 화면 표시111
     }
+
+    // 로그인 성공 시 role_id 저장
+    public void loginSuccess(int userRoleId) {
+        isLoggedIn = true;
+        currentUserRoleId = userRoleId; // 로그인한 사용자의 역할 ID 저장
+    }
+
 
     /**
      * 메뉴바 생성
@@ -152,12 +159,21 @@ public class MainUI extends JFrame {
 
         JMenuItem managerItem = new JMenuItem("관리자 메뉴");
         managerItem.addActionListener(e -> {
-            if (isUserLoggedIn()) {
-                EventManager.getInstance().notifyListeners(); // 갱신 이벤트 발생
-                showPanel(MANAGER_PANEL);
-            } else {
+            if (!isUserLoggedIn()) {
                 JOptionPane.showMessageDialog(null, "먼저 로그인해주세요.");
                 showPanel(LOGIN_PANEL);
+                return;
+            }
+
+            // role_id가 3인 경우(매니저)에만 접근 허용
+            if (currentUserRoleId != null && currentUserRoleId == 3) {
+                EventManager.getInstance().notifyListeners();
+                showPanel(MANAGER_PANEL);
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "관리자 메뉴는 매니저만 접근 가능합니다.",
+                        "접근 제한",
+                        JOptionPane.WARNING_MESSAGE);
             }
         });
         workMenu.add(managerItem);
@@ -168,11 +184,11 @@ public class MainUI extends JFrame {
         infoItem.addActionListener(e -> {
             JOptionPane.showMessageDialog(null,
                     "<html><h3>애플리케이션 정보</h3>" +
-                            "<p>이 애플리케이션은 제품 관리, 판매 관리, 재고 관리, 직원 관리를 위해 설계되었습니다.</p>" +
-                            "<p>개발자: [Your Name]</p>" +
+                            "<p>이 애플리케이션은 소규모 사업장의 제품 및 판매 관리를 위해 설계되었습니다.</p>" +
+                            "<p>개발자: [Team KYL]</p>" +
                             "<p>버전: 1.0.0</p>" +
                             "<p>특징: 사용자 친화적인 UI, 실시간 데이터베이스 연동, 다양한 관리 기능 제공</p>" +
-                            "<br><p>기타 정보:</p>" +
+                            "<br><p> 지금 구매하시면 키오스크 프로그램 할인 행사!</p>" +
                             "<ul>" +
                             "<li>현재 시간을 확인하려면 상단 메뉴바를 확인하세요!</li>" +
                             "<li>로그인 후 다양한 관리 기능을 사용할 수 있습니다.</li>" +
@@ -190,7 +206,10 @@ public class MainUI extends JFrame {
         setJMenuBar(menuBar); // 메뉴바 설정
     }
 
-
+    // role_id getter 추가
+    public Integer getCurrentUserRoleId() {
+        return currentUserRoleId; // 현재 로그인된 사용자의 역할 ID 반환
+    }
 
     /**
      * 현재 패널을 인쇄하는 메서드
@@ -237,27 +256,53 @@ public class MainUI extends JFrame {
      * @param panelName 표시할 패널 이름
      */
     public static void showPanel(String panelName) {
-        CardLayout layout = (CardLayout) centerPanel.getLayout();
-        layout.show(centerPanel, panelName);
+        CardLayout cl = (CardLayout) (centerPanel.getLayout());
+
+        // RegisterUI 패널 초기화
+        if (panelName.equals(REGISTER_PANEL)) {
+            Component[] components = centerPanel.getComponents();
+            for (Component component : components) {
+                if (component instanceof RegisterUI) {
+                    RegisterUI registerUI = (RegisterUI) component;
+                    registerUI.clearFields(); // 텍스트 필드 초기화
+                    break;
+                }
+            }
+        }
+
+        // LoginUI 패널 초기화
+        if (panelName.equals(LOGIN_PANEL)) {
+            Component[] components = centerPanel.getComponents();
+            for (Component component : components) {
+                if (component instanceof LoginUI) {
+                    LoginUI loginUI = (LoginUI) component;
+                    loginUI.clearFields(); // 텍스트 필드 초기화
+                    break;
+                }
+            }
+        }
+
+        // 패널 전환
+        cl.show(centerPanel, panelName);
     }
+
 
     /**
      * 메인 메서드
      * - 애플리케이션 실행.
      */
     public static void main(String[] args) {
-        try {
-            new MainUI();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        SwingUtilities.invokeLater(() -> {
+            try {
+                new MainUI();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "데이터베이스 연결에 실패했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
-    /**
-     * 로그인 성공 시 호출되는 메서드
-     * - 로그인 상태를 true로 설정
-     */
-    public void loginSuccess() {
-        isLoggedIn = true;
-    }
+
+
+
 }
