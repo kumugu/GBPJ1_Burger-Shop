@@ -82,8 +82,9 @@ public class MainUI extends JFrame {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (isUserLoggedIn()) {
-                    EventManager.getInstance().notifyListeners(); // 전체 갱신 이벤트 트리거
-                    showPanel(LOBBY_PANEL); // "홈" 클릭 시 로비 화면으로 이동
+                    EventManager.getInstance().notifyListeners("REFRESH_UI");
+                    showPanel(LOBBY_PANEL); // "홈" 클릭 시 로비 화면으로
+
                 } else {
                     JOptionPane.showMessageDialog(null, "먼저 로그인해주세요.");
                     showPanel(LOGIN_PANEL); // 로그인 화면으로 이동
@@ -124,7 +125,7 @@ public class MainUI extends JFrame {
         JMenuItem salesItem = new JMenuItem("판매 관리");
         salesItem.addActionListener(e -> {
             if (isUserLoggedIn()) {
-                EventManager.getInstance().notifyListeners(); // 갱신 이벤트 발생
+                EventManager.getInstance().notifyListeners(EventTypes.REFRESH_UI);
                 showPanel(SALES_PANEL);
             } else {
                 JOptionPane.showMessageDialog(null, "먼저 로그인해주세요.");
@@ -136,7 +137,7 @@ public class MainUI extends JFrame {
         JMenuItem productItem = new JMenuItem("상품 관리");
         productItem.addActionListener(e -> {
             if (isUserLoggedIn()) {
-                EventManager.getInstance().notifyListeners(); // 갱신 이벤트 발생
+                EventManager.getInstance().notifyListeners(EventTypes.REFRESH_UI); // 적절한 이벤트 타입 전달
                 showPanel(PRODUCTS_PANEL);
             } else {
                 JOptionPane.showMessageDialog(null, "먼저 로그인해주세요.");
@@ -148,7 +149,7 @@ public class MainUI extends JFrame {
         JMenuItem inventoryItem = new JMenuItem("재고 관리");
         inventoryItem.addActionListener(e -> {
             if (isUserLoggedIn()) {
-                EventManager.getInstance().notifyListeners(); // 갱신 이벤트 발생
+                EventManager.getInstance().notifyListeners(EventTypes.REFRESH_UI); // 적절한 이벤트 타입 전달
                 showPanel(INVENTORY_PANEL);
             } else {
                 JOptionPane.showMessageDialog(null, "먼저 로그인해주세요.");
@@ -167,7 +168,7 @@ public class MainUI extends JFrame {
 
             // role_id가 3인 경우(매니저)에만 접근 허용
             if (currentUserRoleId != null && currentUserRoleId == 3) {
-                EventManager.getInstance().notifyListeners();
+                EventManager.getInstance().notifyListeners(EventTypes.REFRESH_UI);
                 showPanel(MANAGER_PANEL);
             } else {
                 JOptionPane.showMessageDialog(null,
@@ -184,11 +185,11 @@ public class MainUI extends JFrame {
         infoItem.addActionListener(e -> {
             JOptionPane.showMessageDialog(null,
                     "<html><h3>애플리케이션 정보</h3>" +
-                            "<p>이 애플리케이션은 소규모 사업장의 제품 및 판매 관리를 위해 설계되었습니다.</p>" +
-                            "<p>개발자: [Team KYL]</p>" +
+                            "<p>이 애플리케이션은 제품 관리, 판매 관리, 재고 관리, 직원 관리를 위해 설계되었습니다.</p>" +
+                            "<p>개발자: [Your Name]</p>" +
                             "<p>버전: 1.0.0</p>" +
                             "<p>특징: 사용자 친화적인 UI, 실시간 데이터베이스 연동, 다양한 관리 기능 제공</p>" +
-                            "<br><p> 지금 구매하시면 키오스크 프로그램 할인 행사!</p>" +
+                            "<br><p>기타 정보:</p>" +
                             "<ul>" +
                             "<li>현재 시간을 확인하려면 상단 메뉴바를 확인하세요!</li>" +
                             "<li>로그인 후 다양한 관리 기능을 사용할 수 있습니다.</li>" +
